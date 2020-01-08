@@ -1,6 +1,7 @@
 % chenxy, 2019-11-30
 close all; clear; clc
 
+addpath('..\data');
 global filename0 SYSCNT_PERIOD
 
 %filename0 = 'normal_CIR_dump_20191230_1114'; nFrames      = 5;
@@ -64,12 +65,31 @@ for k = 1:nFrames
         %size(S)
         %disp(S)
         assert(size(S,2)==8);
-                    
-        real1_str = [char(S(7)) char(S(8))];
-        imag1_str = [char(S(5)) char(S(6))];
-        real2_str = [char(S(3)) char(S(4))];
-        imag2_str = [char(S(1)) char(S(2))];
-    
+        
+        %% There maybe mistake in DW user-manual. 
+        %% For each 2-bytes, take the left one as MSB, and the right one as LSB, seems to produce more reasonable CIR curve.
+        %%        Tap[2*K]                    Tap[2*K+1]
+        %% (1) I_MSB I_LSB Q_MSB Q_LSB     I_MSB I_LSB Q_MSB Q_LSB   -- which one?
+        %% (2) Q_MSB Q_LSB I_MSB I_LSB     Q_MSB Q_LSB I_MSB I_LSB   -- which one?
+        %% Currently, no obvious way to distinguish which one is correct.
+        
+        % real1_str = [char(S(7)) char(S(8))];
+        % imag1_str = [char(S(5)) char(S(6))];
+        % real2_str = [char(S(3)) char(S(4))];
+        % imag2_str = [char(S(1)) char(S(2))];
+
+        % Corresponding to the abovementioned (2)
+        real2_str = [char(S(7)) char(S(8))];
+        imag2_str = [char(S(5)) char(S(6))];
+        real1_str = [char(S(3)) char(S(4))];
+        imag1_str = [char(S(1)) char(S(2))];
+
+        % Corresponding to the abovementioned (1)
+        % imag2_str = [char(S(7)) char(S(8))];
+        % real2_str = [char(S(5)) char(S(6))];
+        % imag1_str = [char(S(3)) char(S(4))];
+        % real1_str = [char(S(1)) char(S(2))];
+   
         real1     = us2signed(hex2dec(real1_str), 16);
         imag1     = us2signed(hex2dec(imag1_str), 16);
         real2     = us2signed(hex2dec(real2_str), 16);
@@ -87,8 +107,10 @@ for k = 1:nFrames
 end
 
 for k = 1:nFrames
-    figure;
-    plot(abs(cir(1:992,k))) ; title(['cir plot in real domain, k = ', num2str(k)]);
+    figure; 
+    %plot(abs(cir(1:992,k))) ; title(['cir plot in real domain, k = ', num2str(k)]);
+    subplot(1,2,1); plot(abs(cir(1:992,k))) ; title(['cir magnitude in real domain, k = ', num2str(k)]);
+    subplot(1,2,2); plot(unwrap(angle(cir(1:992,k)))) ; title(['cir phase, k = ', num2str(k)]);
 end
 
 %% figure; hold on;

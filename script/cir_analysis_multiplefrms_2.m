@@ -6,7 +6,9 @@ global filename0 SYSCNT_PERIOD
 addpath('..\data\');
 
 %filename0 = 'normal_CIR_dump_20200102_1900'; nFrames = 74;
-filename0 = 'normal_CIR_dump_20200103_0945'; nFrames = 587;
+%filename0 = 'normal_CIR_dump_20200103_0945'; nFrames = 587;
+filename0 = 'normal_CIR_outdoor_10m_20200107_1424';  nFrames = 14;
+
 filename  = [filename0 '.txt'];
 disp(filename);
 
@@ -93,10 +95,29 @@ for k = 1:nFrames
         %disp(S)
         assert(size(S,2)==8);
                     
-        real1_str = [char(S(7)) char(S(8))];
-        imag1_str = [char(S(5)) char(S(6))];
-        real2_str = [char(S(3)) char(S(4))];
-        imag2_str = [char(S(1)) char(S(2))];
+        %% There maybe mistake in DW user-manual. 
+        %% For each 2-bytes, take the left one as MSB, and the right one as LSB, seems to produce more reasonable CIR curve.
+        %%        Tap[2*K]                    Tap[2*K+1]
+        %% (1) I_MSB I_LSB Q_MSB Q_LSB     I_MSB I_LSB Q_MSB Q_LSB   -- which one?
+        %% (2) Q_MSB Q_LSB I_MSB I_LSB     Q_MSB Q_LSB I_MSB I_LSB   -- which one?
+        %% Currently, no obvious way to distinguish which one is correct.
+        
+        % real1_str = [char(S(7)) char(S(8))];
+        % imag1_str = [char(S(5)) char(S(6))];
+        % real2_str = [char(S(3)) char(S(4))];
+        % imag2_str = [char(S(1)) char(S(2))];
+
+        % Corresponding to the abovementioned (2)
+        real2_str = [char(S(7)) char(S(8))];
+        imag2_str = [char(S(5)) char(S(6))];
+        real1_str = [char(S(3)) char(S(4))];
+        imag1_str = [char(S(1)) char(S(2))];
+
+        % Corresponding to the abovementioned (1)
+        % imag2_str = [char(S(7)) char(S(8))];
+        % real2_str = [char(S(5)) char(S(6))];
+        % imag1_str = [char(S(3)) char(S(4))];
+        % real1_str = [char(S(1)) char(S(2))];
     
         real1     = us2signed(hex2dec(real1_str), 16);
         imag1     = us2signed(hex2dec(imag1_str), 16);
@@ -114,10 +135,10 @@ for k = 1:nFrames
                   
 end
 
-%% for k = 1:nFrames
-%%     figure;
-%%     plot(abs(cir(1:992,k))) ; title(['cir plot in real domain, k = ', num2str(k)]);
-%% end
+for k = 1:nFrames
+    figure;
+    plot(abs(cir(1:992,k))) ; title(['cir plot in real domain, k = ', num2str(k)]);
+end
 
 %% figure; hold on;
 %% for k = 1:nFrames
